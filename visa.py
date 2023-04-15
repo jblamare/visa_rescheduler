@@ -28,9 +28,6 @@ FACILITY_ID = config["USVISA"]["FACILITY_ID"]
 PUSH_TOKEN = config["PUSHOVER"]["PUSH_TOKEN"]
 PUSH_USER = config["PUSHOVER"]["PUSH_USER"]
 
-LOCAL_USE = config["CHROMEDRIVER"].getboolean("LOCAL_USE")
-HUB_ADDRESS = config["CHROMEDRIVER"]["HUB_ADDRESS"]
-
 REGEX_CONTINUE = "//a[contains(text(),'Continue')]"
 
 
@@ -49,27 +46,17 @@ TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_I
 APPOINTMENT_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment"
 EXIT = False
 
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
+last_seen = None
+
 
 def send_notification(msg):
     print(f"Sending notification: {msg}")
-
     if PUSH_TOKEN:
         url = "https://api.pushover.net/1/messages.json"
         data = {"token": PUSH_TOKEN, "user": PUSH_USER, "message": msg}
         requests.post(url, data)
-
-
-def get_driver():
-    if LOCAL_USE:
-        dr = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    else:
-        dr = webdriver.Remote(
-            command_executor=HUB_ADDRESS, options=webdriver.ChromeOptions()
-        )
-    return dr
-
-
-driver = get_driver()
 
 
 def login():
@@ -202,9 +189,6 @@ def print_dates(dates):
             "%s \t business_day: %s" % (d.get("date"), d.get("business_day"))
         )
     print()
-
-
-last_seen = None
 
 
 def get_available_date(dates):
